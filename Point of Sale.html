@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS — Point of Sale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-app">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">BMS</div>
+      <div class="brand-text">
+        <p class="brand-name">Business Suite</p>
+        <p class="brand-sub">Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">
+        <div class="nav-icon">D</div>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item active" href="Point of Sale.html">
+        <div class="nav-icon">P</div>
+        <span class="nav-label">Point of Sale</span>
+      </a>
+      <a class="nav-item" href="expense-logger.html">
+        <div class="nav-icon">E</div>
+        <span class="nav-label">Expenses</span>
+      </a>
+      <a class="nav-item" href="financial-reports-wireframe.html">
+        <div class="nav-icon">R</div>
+        <span class="nav-label">Reports</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">E</div>
+      <div class="user-info">
+        <p class="user-name">Ethan M.</p>
+        <p class="user-role">Owner</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <p class="page-title">Point of Sale</p>
+        <p class="page-sub">Record customer transactions and generate receipts</p>
+      </div>
+      <div class="topbar-right">
+        <input class="topbar-search" type="text" placeholder="Search..." />
+        <div class="topbar-notif">N<span class="notif-dot"></span></div>
+        <div class="topbar-avatar" onclick="signOut()" title="Sign out">E</div>
+      </div>
+    </header>
+
+    <div class="pos-layout">
+
+      <!-- ── Basket Panel ── -->
+      <div class="basket-panel">
+        <div class="basket-header">
+          <div class="basket-title">Current Transaction Basket</div>
+          <div class="basket-sub" id="basketSub">TXN-0001 • Today</div>
+        </div>
+
+        <div style="position:relative;">
+          <div class="search-add-row">
+            <input class="product-search" id="productSearch" type="text" placeholder="Search product or scan SKU..." />
+            <button class="add-btn" id="addBtn">Add</button>
+          </div>
+          <div id="searchResults" style="position:absolute;top:48px;left:0;right:80px;background:#fff;border:1px solid #e4e4e7;border-radius:8px;z-index:20;max-height:240px;overflow-y:auto;display:none;"></div>
+        </div>
+
+        <div class="table-head-row">
+          <div class="col-product">Product</div>
+          <div class="col-sku">SKU</div>
+          <div class="col-qty">Qty</div>
+          <div class="col-unit">Unit Price</div>
+          <div class="col-total">Total</div>
+          <div class="col-x"></div>
+        </div>
+
+        <div id="basketItems">
+          <p style="padding:20px;color:#888;font-size:13px;">No items in basket. Search and add products above.</p>
+        </div>
+
+        <div class="totals-block">
+          <div class="total-row"><div>Subtotal</div><div class="value" id="subtotalVal">KSh 0</div></div>
+          <div class="total-row"><div>Discount</div><div class="value" id="discountVal">KSh 0</div></div>
+          <div class="total-row"><div>Tax (16% VAT)</div><div class="value" id="taxVal">KSh 0</div></div>
+          <div class="total-row grand"><div>Grand Total</div><div class="value" id="grandVal">KSh 0</div></div>
+        </div>
+      </div>
+
+      <!-- ── Checkout Panel ── -->
+      <div class="checkout-panel">
+        <div class="checkout-title">Checkout</div>
+
+        <label class="field-label">Discount (%)</label>
+        <input class="pos-field-input" id="discountInput" type="number" placeholder="0" min="0" max="100" value="0" />
+
+        <label class="field-label">Payment Method</label>
+        <div class="payment-methods">
+          <button class="pay-btn selected">Cash</button>
+          <button class="pay-btn">M-Pesa</button>
+          <button class="pay-btn">Card</button>
+          <button class="pay-btn">Bank</button>
+        </div>
+
+        <label class="field-label">Cash Tendered</label>
+        <input class="pos-field-input" id="cashTendered" type="number" placeholder="KSh 0.00" />
+
+        <label class="field-label">Change Due</label>
+        <input class="pos-field-input" id="changeDue" type="text" placeholder="KSh 0.00" readonly />
+
+        <button class="process-btn" id="processBtn">Process Checkout</button>
+        <button class="clear-btn" id="clearBtn">Clear Basket</button>
+        <div class="receipt-note">Receipt will be generated automatically upon checkout</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="pos.js"></script>
+</body>
+</html>

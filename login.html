@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-login">
+  <div class="login-card">
+    <div class="card-header">
+      <p class="logo">BMS</p>
+      <p class="subtitle">Business Management System</p>
+    </div>
+
+    <hr class="divider" />
+
+    <p class="card-title">Sign in to your account</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <div class="input-wrap">
+          <input type="email" id="emailInput" placeholder="Enter your email" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="passwordInput" placeholder="••••••••" required />
+          <span class="show-btn" id="showBtn">Show</span>
+        </div>
+      </div>
+
+      <div class="row-options">
+        <label class="remember">
+          <input type="checkbox" />
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn-signin" id="signInBtn">Sign In</button>
+    </form>
+
+    <hr class="divider" />
+
+    <div class="card-footer">
+      <p>Version 1.0.0 &bull; Internal Use Only</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

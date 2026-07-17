@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS — Expense Logger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-app">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">BMS</div>
+      <div class="brand-text">
+        <p class="brand-name">Business Suite</p>
+        <p class="brand-sub">Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">
+        <div class="nav-icon">D</div>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="Point of Sale.html">
+        <div class="nav-icon">P</div>
+        <span class="nav-label">Point of Sale</span>
+      </a>
+      <a class="nav-item active" href="expense-logger.html">
+        <div class="nav-icon">E</div>
+        <span class="nav-label">Expenses</span>
+      </a>
+      <a class="nav-item" href="financial-reports-wireframe.html">
+        <div class="nav-icon">R</div>
+        <span class="nav-label">Reports</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">E</div>
+      <div class="user-info">
+        <p class="user-name">Ethan M.</p>
+        <p class="user-role">Owner</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <p class="page-title">Expense Logger</p>
+        <p class="page-sub">Log and track operational expenses and staff payroll</p>
+      </div>
+      <div class="topbar-right">
+        <input class="topbar-search" type="text" placeholder="Search..." />
+        <div class="topbar-notif">N<span class="notif-dot"></span></div>
+        <div class="topbar-avatar" onclick="signOut()" title="Sign out">E</div>
+      </div>
+    </header>
+
+    <div class="expense-layout">
+
+      <!-- ── Left: Log Form ── -->
+      <div class="panel-left">
+        <div class="panel-title">Log New Expense</div>
+
+        <div class="error-msg" id="expenseError"></div>
+        <div class="success-msg" id="expenseSuccess"></div>
+
+        <form id="expenseForm">
+          <div class="field-group">
+            <label class="field-label">Expense Type</label>
+            <select id="expenseType" class="field-input" required>
+              <option value="">Select type...</option>
+              <option value="SALARY">SALARY</option>
+              <option value="OPEX">OPEX</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Amount (KSh)</label>
+            <input type="number" id="expenseAmount" class="field-input" placeholder="e.g. 15000.00" min="0" step="0.01" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Description</label>
+            <input type="text" id="expenseDesc" class="field-input" placeholder="Brief description of expense" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Fiscal Period</label>
+            <input type="text" id="fiscalPeriod" class="field-input" placeholder="e.g. July 2025" required />
+          </div>
+
+          <button type="submit" class="log-btn" id="logBtn">Log Expense</button>
+        </form>
+
+        <div class="validation-title">Validation Rules</div>
+        <div class="validation-item"><div class="dot"></div><div>Amount cannot be negative (&gt;= 0)</div></div>
+        <div class="validation-item"><div class="dot"></div><div>Expense Type cannot be empty</div></div>
+        <div class="validation-item"><div class="dot"></div><div>Description required for OPEX entries</div></div>
+      </div>
+
+      <!-- ── Right: Ledger ── -->
+      <div class="panel-right">
+        <div class="ledger-title">Expense Ledger</div>
+        <div class="ledger-sub" id="ledgerPeriod">Loading...</div>
+
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-label">Total OPEX</div>
+            <div class="summary-value opex" id="sumOpex">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Payroll</div>
+            <div class="summary-value payroll" id="sumPayroll">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Other</div>
+            <div class="summary-value other" id="sumOther">—</div>
+          </div>
+        </div>
+
+        <table class="expense-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Logged By</th>
+            </tr>
+          </thead>
+          <tbody id="expenseLedger">
+            <tr><td colspan="5" style="color:#888;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="expense-logger.js"></script>
+</body>
+</html>
