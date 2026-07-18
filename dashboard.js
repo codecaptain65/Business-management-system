@@ -23,7 +23,7 @@
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
 
   // ── Fetch revenue ──
-  const { data: txns } = await supabase
+  const { data: txns } = await db
     .from('sales_transaction')
     .select('total_amount, tax_amount')
     .gte('transaction_date', monthStart)
@@ -33,7 +33,7 @@
   const totalTax = (txns || []).reduce((s, t) => s + Number(t.tax_amount || 0), 0);
 
   // ── Fetch expenses ──
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expense')
     .select('amount, expense_type')
     .gte('logged_at', monthStart)
@@ -57,7 +57,7 @@
   document.getElementById('plNet').textContent = formatKSh(netProfit);
 
   // ── Low stock alerts ──
-  const { data: allProducts } = await supabase
+  const { data: allProducts } = await db
     .from('product')
     .select('product_name, stock_quantity, low_stock_threshold');
 
@@ -80,7 +80,7 @@
   if (alertBadge) alertBadge.textContent = alertProducts.length;
 
   // ── Recent transactions ──
-  const { data: recentTxns } = await supabase
+  const { data: recentTxns } = await db
     .from('sales_transaction')
     .select('transaction_id, total_amount, transaction_date, staff_user_id, app_user(username), sale_item(sale_item_id)')
     .order('transaction_date', { ascending: false })

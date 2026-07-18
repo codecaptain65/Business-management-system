@@ -4,7 +4,7 @@ let currentAppUser = null;
 
 async function loadExpenses() {
   // Fetch all expenses, ordered by most recent
-  const { data: expenses, error } = await supabase
+  const { data: expenses, error } = await db
     .from('expense')
     .select('*, app_user(username)')
     .order('logged_at', { ascending: false });
@@ -79,7 +79,7 @@ async function loadExpenses() {
     btn.disabled = true;
     btn.textContent = 'Logging...';
 
-    const { error } = await supabase.from('expense').insert({
+    const { error } = await db.from('expense').insert({
       expense_type: expenseType,
       amount: amount,
       description: description || null,

@@ -2,21 +2,21 @@
 const SUPABASE_URL = 'https://gxouidkuyoqsioufqitc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4b3VpZGt1eW9xc2lvdWZxaXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMzQ5MzAsImV4cCI6MjA5NjgxMDkzMH0.YaCz_m9r2YynWVH_R1efLsHSjtpG68LXT8P_KyHnIQE';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Auth Helpers ──
 async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   return user;
 }
 
 async function getCurrentSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   return session;
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await db.auth.signOut();
   window.location.href = 'login.html';
 }
 

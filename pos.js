@@ -90,11 +90,11 @@ window.addToBasket = addToBasket;
   currentPosUser = await getAppUser();
 
   // Load all products for search
-  const { data } = await supabase.from('product').select('*').order('product_name');
+  const { data } = await db.from('product').select('*').order('product_name');
   productsList = data || [];
 
   // Generate a transaction reference
-  const { count } = await supabase.from('sales_transaction').select('*', { count: 'exact', head: true });
+  const { count } = await db.from('sales_transaction').select('*', { count: 'exact', head: true });
   const txnNum = (count || 0) + 1;
   document.getElementById('basketSub').textContent =
     'TXN-' + String(txnNum).padStart(4, '0') + ' • Today ' +
@@ -171,7 +171,7 @@ window.addToBasket = addToBasket;
     const grandTotal = afterDiscount + taxAmount;
 
     // 1. Insert sales_transaction
-    const { data: txn, error: txnErr } = await supabase
+    const { data: txn, error: txnErr } = await db
       .from('sales_transaction')
       .insert({
         total_amount: grandTotal,
@@ -199,19 +199,19 @@ window.addToBasket = addToBasket;
       line_total: item.unit_price * item.qty
     }));
 
-    const { error: itemsErr } = await supabase.from('sale_item').insert(saleItems);
+    const { error: itemsErr } = await db.from('sale_item').insert(saleItems);
     if (itemsErr) console.error('Error inserting sale items:', itemsErr);
 
     // 3. Update stock quantities
     for (const item of basket) {
-      await supabase.from('product')
+      await db.from('product')
         .update({ stock_quantity: item.stock_quantity - item.qty })
         .eq('product_id', item.product_id);
     }
 
     // 4. Generate receipt
     const receiptNum = 'RCP-' + String(txn.transaction_id).padStart(4, '0');
-    await supabase.from('receipt').insert({
+    await db.from('receipt').insert({
       transaction_id: txn.transaction_id,
       receipt_number: receiptNum,
       subtotal: subtotal,
@@ -230,7 +230,7 @@ window.addToBasket = addToBasket;
     processBtn.textContent = 'Process Checkout';
 
     // Refresh product stock data
-    const { data: refreshed } = await supabase.from('product').select('*').order('product_name');
+    const { data: refreshed } = await db.from('product').select('*').order('product_name');
     productsList = refreshed || [];
   });
 

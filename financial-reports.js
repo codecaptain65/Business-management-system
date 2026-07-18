@@ -16,7 +16,7 @@
   document.getElementById('stmtTitle').textContent = 'Profit & Loss Statement — ' + periodLabel;
 
   // ── Fetch revenue ──
-  const { data: txns } = await supabase
+  const { data: txns } = await db
     .from('sales_transaction')
     .select('total_amount, tax_amount')
     .gte('transaction_date', monthStart)
@@ -26,7 +26,7 @@
   const totalTax = (txns || []).reduce((s, t) => s + Number(t.tax_amount || 0), 0);
 
   // ── Fetch expenses ──
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expense')
     .select('amount, expense_type')
     .gte('logged_at', monthStart)
@@ -55,7 +55,7 @@
   document.getElementById('stmtNetProfit').textContent = formatKSh(netProfit);
 
   // ── Recent exports ──
-  const { data: exports } = await supabase
+  const { data: exports } = await db
     .from('export_engine')
     .select('*, financial_report(report_type)')
     .order('exported_at', { ascending: false })
@@ -83,7 +83,7 @@
     const appUser = await getAppUser();
 
     // Create a financial_report record
-    const { data: report, error: rptErr } = await supabase
+    const { data: report, error: rptErr } = await db
       .from('financial_report')
       .insert({
         report_type: 'PL',
@@ -101,7 +101,7 @@
     if (rptErr) { alert('Error generating report: ' + rptErr.message); return; }
 
     // Log in export_engine
-    await supabase.from('export_engine').insert({
+    await db.from('export_engine').insert({
       exported_by_user_id: appUser ? appUser.user_id : null,
       export_type: 'EXCEL',
       source_report_id: report.report_id
