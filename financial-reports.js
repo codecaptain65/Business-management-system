@@ -14,6 +14,8 @@
   // Update period labels
   document.getElementById('periodLabel').textContent = periodLabel;
   document.getElementById('stmtTitle').textContent = 'Profit & Loss Statement — ' + periodLabel;
+  const exportPeriodEl = document.getElementById('exportPeriod');
+  if (exportPeriodEl) exportPeriodEl.textContent = periodLabel + ' ▾';
 
   // ── Fetch revenue ──
   const { data: txns } = await db

@@ -52,7 +52,10 @@ async function loadExpenses() {
   // Set default fiscal period to current month
   const now = new Date();
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('fiscalPeriod').value = months[now.getMonth()] + ' ' + now.getFullYear();
+  const currentPeriod = months[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('fiscalPeriod').value = currentPeriod;
+  const ledgerPeriodEl = document.getElementById('ledgerPeriod');
+  if (ledgerPeriodEl) ledgerPeriodEl.textContent = 'Period: ' + currentPeriod;
 
   // Load existing expenses
   await loadExpenses();

@@ -17,14 +17,14 @@ async function getCurrentSession() {
 
 async function signOut() {
   await db.auth.signOut();
-  window.location.href = 'login.html';
+  window.location.href = 'index.html';
 }
 
 // Auth guard — call on every protected page
 async function requireAuth() {
   const session = await getCurrentSession();
   if (!session) {
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
     return null;
   }
   return session;
@@ -34,7 +34,7 @@ async function requireAuth() {
 async function getAppUser() {
   const user = await getCurrentUser();
   if (!user) return null;
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('app_user')
     .select('*, app_role(*)')
     .eq('email', user.email)
