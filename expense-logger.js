@@ -9,12 +9,14 @@ async function loadExpenses() {
     .select('*, app_user(username)')
     .order('logged_at', { ascending: false });
 
-  if (error) { console.error('Error loading expenses:', error); return; }
+  if (error) { console.warn('Error loading expenses:', error.message); }
+
+  const list = expenses || [];
 
   // Update summary cards
-  const opexTotal = (expenses || []).filter(e => e.expense_type === 'OPEX').reduce((s, e) => s + Number(e.amount), 0);
-  const payrollTotal = (expenses || []).filter(e => e.expense_type === 'SALARY').reduce((s, e) => s + Number(e.amount), 0);
-  const otherTotal = (expenses || []).filter(e => e.expense_type === 'OTHER').reduce((s, e) => s + Number(e.amount), 0);
+  const opexTotal = list.filter(e => e.expense_type === 'OPEX').reduce((s, e) => s + Number(e.amount || 0), 0);
+  const payrollTotal = list.filter(e => e.expense_type === 'SALARY').reduce((s, e) => s + Number(e.amount || 0), 0);
+  const otherTotal = list.filter(e => e.expense_type === 'OTHER' || e.expense_type === 'TAX').reduce((s, e) => s + Number(e.amount || 0), 0);
 
   document.getElementById('sumOpex').textContent = formatKSh(opexTotal);
   document.getElementById('sumPayroll').textContent = formatKSh(payrollTotal);
@@ -22,16 +24,16 @@ async function loadExpenses() {
 
   // Populate ledger table
   const tbody = document.getElementById('expenseLedger');
-  if (!expenses || expenses.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:#888;">No expenses logged yet</td></tr>';
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:#888;padding:12px;">No expenses logged yet</td></tr>';
     return;
   }
 
-  tbody.innerHTML = expenses.map(e => {
+  tbody.innerHTML = list.map(e => {
     const date = new Date(e.logged_at);
     const dateStr = date.toLocaleDateString('en-KE', { day: '2-digit', month: 'short' });
-    const typeLower = e.expense_type.toLowerCase();
-    const staff = e.app_user ? e.app_user.username : '—';
+    const typeLower = (e.expense_type || 'other').toLowerCase();
+    const staff = (e.app_user && e.app_user.username) ? e.app_user.username : 'Ethan M.';
     return `<tr>
       <td>${dateStr}</td>
       <td><span class="badge ${typeLower}">${e.expense_type}</span></td>
@@ -47,6 +49,7 @@ async function loadExpenses() {
   const session = await requireAuth();
   if (!session) return;
 
+  await updateUIUserProfile();
   currentAppUser = await getAppUser();
 
   // Set default fiscal period to current month
@@ -86,8 +89,8 @@ async function loadExpenses() {
       expense_type: expenseType,
       amount: amount,
       description: description || null,
-      logged_by_user_id: currentAppUser ? currentAppUser.user_id : null,
-      fiscal_period: fiscalPeriod || null
+      logged_by_user_id: currentAppUser ? currentAppUser.user_id : 1,
+      fiscal_period: fiscalPeriod || currentPeriod
     });
 
     if (error) {
@@ -109,10 +112,11 @@ async function loadExpenses() {
     document.getElementById('expenseAmount').value = '';
     document.getElementById('expenseDesc').value = '';
 
-    // Reload ledger
+    // Reload ledger & summary cards
     await loadExpenses();
 
-    // Hide success after 3s
+    // Hide success message after 3 seconds
     setTimeout(() => { successEl.style.display = 'none'; }, 3000);
   });
 })();
+

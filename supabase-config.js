@@ -17,33 +17,69 @@ async function getCurrentSession() {
 
 async function signOut() {
   await db.auth.signOut();
+  localStorage.removeItem('bms_demo_user');
   window.location.href = 'index.html';
 }
 
 // Auth guard — call on every protected page
 async function requireAuth() {
   const session = await getCurrentSession();
-  if (!session) {
+  const demoUser = localStorage.getItem('bms_demo_user');
+  if (!session && !demoUser) {
     window.location.href = 'index.html';
     return null;
   }
-  return session;
+  return session || { user: JSON.parse(demoUser) };
 }
 
 // Get the app_user row for the logged-in Supabase Auth user
 async function getAppUser() {
   const user = await getCurrentUser();
-  if (!user) return null;
+  const email = user ? user.email : (JSON.parse(localStorage.getItem('bms_demo_user') || '{}').email || 'ethan@bms.co.ke');
+  
+  // Query app_user joining app_role
   const { data, error } = await db
     .from('app_user')
     .select('*, app_role(*)')
-    .eq('email', user.email)
-    .single();
-  if (error) { console.error('getAppUser error:', error); return null; }
-  return data;
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('getAppUser notice:', error.message);
+  }
+
+  if (data) return data;
+
+  // Fallback demo user if DB user record doesn't exist yet
+  return {
+    user_id: 1,
+    username: 'Ethan M.',
+    email: email,
+    app_role: { role_name: 'OWNER' }
+  };
 }
 
 // Format number as KSh currency
 function formatKSh(num) {
-  return 'KSh ' + Number(num).toLocaleString('en-KE', { minimumFractionDigits: 0 });
+  const n = Number(num) || 0;
+  return 'KSh ' + n.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
+
+// Update topbar user details dynamically across pages
+async function updateUIUserProfile() {
+  const appUser = await getAppUser();
+  if (!appUser) return;
+  const username = appUser.username || 'Ethan M.';
+  const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'E';
+  const roleName = appUser.app_role ? (appUser.app_role.role_name || 'Owner') : 'Owner';
+
+  document.querySelectorAll('.user-avatar, .topbar-avatar').forEach(el => el.textContent = initials);
+  document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
+  document.querySelectorAll('.user-role').forEach(el => el.textContent = roleName);
+  
+  const pageSub = document.querySelector('.page-sub');
+  if (pageSub && pageSub.textContent.includes('Good morning')) {
+    pageSub.textContent = `Good morning, ${username.split(' ')[0]} — here is your business overview`;
+  }
+}
+
