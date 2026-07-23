@@ -68,18 +68,56 @@ function formatKSh(num) {
 // Update topbar user details dynamically across pages
 async function updateUIUserProfile() {
   const appUser = await getAppUser();
-  if (!appUser) return;
-  const username = appUser.username || 'Ethan M.';
-  const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'E';
-  const roleName = appUser.app_role ? (appUser.app_role.role_name || 'Owner') : 'Owner';
+  if (appUser) {
+    const username = appUser.username || 'Ethan M.';
+    const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'E';
+    const roleName = appUser.app_role ? (appUser.app_role.role_name || 'Owner') : 'Owner';
 
-  document.querySelectorAll('.user-avatar, .topbar-avatar').forEach(el => el.textContent = initials);
-  document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
-  document.querySelectorAll('.user-role').forEach(el => el.textContent = roleName);
-  
-  const pageSub = document.querySelector('.page-sub');
-  if (pageSub && pageSub.textContent.includes('Good morning')) {
-    pageSub.textContent = `Good morning, ${username.split(' ')[0]} — here is your business overview`;
+    document.querySelectorAll('.user-avatar, .topbar-avatar').forEach(el => el.textContent = initials);
+    document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
+    document.querySelectorAll('.user-role').forEach(el => el.textContent = roleName);
+    
+    const pageSub = document.querySelector('.page-sub');
+    if (pageSub && pageSub.textContent.includes('Good morning')) {
+      pageSub.textContent = `Good morning, ${username.split(' ')[0]} — here is your business overview`;
+    }
+  }
+
+  // Initialize Mobile Hamburger Menu
+  setupMobileMenu();
+}
+
+function setupMobileMenu() {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+
+  // Ensure sidebar-overlay exists
+  let overlay = document.querySelector('.sidebar-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  // Ensure topbar left has mobile menu button
+  const topbarLeft = document.querySelector('.topbar-left');
+  if (topbarLeft && !document.querySelector('.mobile-menu-btn')) {
+    const menuBtn = document.createElement('button');
+    menuBtn.className = 'mobile-menu-btn';
+    menuBtn.setAttribute('aria-label', 'Toggle Navigation Menu');
+    menuBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>';
+    topbarLeft.insertBefore(menuBtn, topbarLeft.firstChild);
+
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    });
   }
 }
+
 

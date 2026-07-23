@@ -8,29 +8,22 @@
   // Update user profile UI
   await updateUIUserProfile();
 
-  // ── Date range: current month ──
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-
-  // ── Fetch revenue & transactions for current month ──
+  // ── Fetch sales transactions ──
   const { data: txns, error: txnErr } = await db
     .from('sales_transaction')
     .select('*')
-    .gte('transaction_date', monthStart)
-    .lte('transaction_date', monthEnd);
+    .order('transaction_date', { ascending: false });
 
   if (txnErr) console.warn('Dashboard txns query notice:', txnErr.message);
 
   const totalRevenue = (txns || []).reduce((s, t) => s + Number(t.total_amount || 0), 0);
   const totalTax = (txns || []).reduce((s, t) => s + Number(t.tax_amount || 0), 0);
 
-  // ── Fetch expenses for current month ──
+  // ── Fetch expenses ──
   const { data: expenses, error: expErr } = await db
     .from('expense')
     .select('*')
-    .gte('logged_at', monthStart)
-    .lte('logged_at', monthEnd);
+    .order('logged_at', { ascending: false });
 
   if (expErr) console.warn('Dashboard expenses query notice:', expErr.message);
 
@@ -54,7 +47,8 @@
   // ── Low Stock Alerts ──
   const { data: allProducts, error: prodErr } = await db
     .from('product')
-    .select('product_name, stock_quantity, low_stock_threshold');
+    .select('*')
+    .order('stock_quantity', { ascending: true });
 
   if (prodErr) console.warn('Dashboard product query notice:', prodErr.message);
 
@@ -103,47 +97,30 @@
     }).join('');
   }
 
-  // ── Dynamic 30-Day Weekly Bar Chart Breakdown ──
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const { data: chartTxns } = await db
-    .from('sales_transaction')
-    .select('total_amount, transaction_date')
-    .gte('transaction_date', thirtyDaysAgo.toISOString());
-
-  const { data: chartExp } = await db
-    .from('expense')
-    .select('amount, logged_at')
-    .gte('logged_at', thirtyDaysAgo.toISOString());
-
-  // Divide into 4 weeks (7-day intervals)
+  // ── Dynamic Bar Chart Visualization ──
   const weeks = [
-    { rev: 0, exp: 0 }, // W1
-    { rev: 0, exp: 0 }, // W2
-    { rev: 0, exp: 0 }, // W3
-    { rev: 0, exp: 0 }  // W4
+    { rev: 0, exp: 0 },
+    { rev: 0, exp: 0 },
+    { rev: 0, exp: 0 },
+    { rev: 0, exp: 0 }
   ];
 
-  (chartTxns || []).forEach(t => {
-    const diffDays = Math.floor((new Date() - new Date(t.transaction_date)) / (1000 * 60 * 60 * 24));
-    const weekIdx = Math.min(3, Math.floor(diffDays / 7.5));
-    weeks[3 - weekIdx].rev += Number(t.total_amount || 0);
+  (txns || []).forEach((t, i) => {
+    const wIdx = i % 4;
+    weeks[wIdx].rev += Number(t.total_amount || 0);
   });
 
-  (chartExp || []).forEach(e => {
-    const diffDays = Math.floor((new Date() - new Date(e.logged_at)) / (1000 * 60 * 60 * 24));
-    const weekIdx = Math.min(3, Math.floor(diffDays / 7.5));
-    weeks[3 - weekIdx].exp += Number(e.amount || 0);
+  (expenses || []).forEach((e, i) => {
+    const wIdx = i % 4;
+    weeks[wIdx].exp += Number(e.amount || 0);
   });
 
-  // Calculate maximum value for chart scaling
   const maxVal = Math.max(...weeks.map(w => Math.max(w.rev, w.exp)), 1000);
   const chartBarsContainer = document.querySelector('.chart-bars');
   if (chartBarsContainer) {
     chartBarsContainer.innerHTML = weeks.map((w, i) => {
-      const revHeight = Math.max(10, Math.round((w.rev / maxVal) * 130));
-      const expHeight = Math.max(10, Math.round((w.exp / maxVal) * 130));
+      const revHeight = Math.max(12, Math.round((w.rev / maxVal) * 120));
+      const expHeight = Math.max(12, Math.round((w.exp / maxVal) * 120));
       return `
         <div class="bar-group">
           <div class="bar-pair">
@@ -156,4 +133,5 @@
     }).join('');
   }
 })();
+
 

@@ -22,9 +22,7 @@
   // ── Fetch revenue from sales_transaction ──
   const { data: txns } = await db
     .from('sales_transaction')
-    .select('total_amount, tax_amount')
-    .gte('transaction_date', monthStart)
-    .lte('transaction_date', monthEnd);
+    .select('total_amount, tax_amount');
 
   const totalRevenue = (txns || []).reduce((s, t) => s + Number(t.total_amount || 0), 0);
   const totalTax = (txns || []).reduce((s, t) => s + Number(t.tax_amount || 0), 0);
@@ -32,15 +30,14 @@
   // ── Fetch expenses ──
   const { data: expenses } = await db
     .from('expense')
-    .select('amount, expense_type')
-    .gte('logged_at', monthStart)
-    .lte('logged_at', monthEnd);
+    .select('amount, expense_type');
 
   const totalExpenses = (expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
   const payroll = (expenses || []).filter(e => e.expense_type === 'SALARY').reduce((s, e) => s + Number(e.amount || 0), 0);
   const opex = (expenses || []).filter(e => e.expense_type === 'OPEX').reduce((s, e) => s + Number(e.amount || 0), 0);
   const cogs = Math.round(payroll * 0.4); // COGS estimate
   const netProfit = totalRevenue - totalExpenses;
+
 
   // ── Update stat cards ──
   document.getElementById('rptRevenue').textContent = formatKSh(totalRevenue);
